@@ -1,0 +1,10 @@
+__pycache__/
+*.pyc
+.DS_Store
+.claude-trace/
+.env
+.venv/
+node_modules/
+dist/
+build/
+*.log
