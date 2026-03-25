@@ -1,0 +1,1321 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Mini-OpenCode | Outsourcing Team</title>
+<style>
+/* ── CSS Variables ── */
+:root {
+  --bg-primary: #0d1117;
+  --bg-secondary: #161b22;
+  --bg-tertiary: #21262d;
+  --bg-card: #1c2128;
+  --border: #30363d;
+  --border-light: #3d444d;
+  --text-primary: #e6edf3;
+  --text-secondary: #8b949e;
+  --text-muted: #6e7681;
+  --accent-blue: #58a6ff;
+  --accent-green: #3fb950;
+  --accent-orange: #d29922;
+  --accent-red: #f85149;
+  --accent-purple: #bc8cff;
+  --accent-cyan: #39d2c0;
+  --shadow: 0 2px 8px rgba(0,0,0,0.3);
+  --radius: 8px;
+  --radius-lg: 12px;
+}
+
+/* ── Reset & Base ── */
+* { margin: 0; padding: 0; box-sizing: border-box; }
+body {
+  font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', 'Noto Sans SC', sans-serif;
+  background: var(--bg-primary);
+  color: var(--text-primary);
+  height: 100vh;
+  overflow: hidden;
+}
+
+/* ── Layout: 3-column ── */
+.app {
+  display: grid;
+  grid-template-columns: 260px 1fr 300px;
+  grid-template-rows: 56px 1fr;
+  height: 100vh;
+}
+
+/* ── Header ── */
+.header {
+  grid-column: 1 / -1;
+  background: var(--bg-secondary);
+  border-bottom: 1px solid var(--border);
+  display: flex;
+  align-items: center;
+  padding: 0 20px;
+  gap: 16px;
+  z-index: 10;
+}
+.header .logo {
+  font-size: 16px;
+  font-weight: 700;
+  color: var(--accent-blue);
+  letter-spacing: -0.5px;
+}
+.header .logo span { color: var(--text-muted); font-weight: 400; }
+.header .model-badge {
+  background: var(--bg-tertiary);
+  border: 1px solid var(--border);
+  padding: 4px 10px;
+  border-radius: 20px;
+  font-size: 12px;
+  color: var(--text-secondary);
+}
+.header .status-dot {
+  width: 8px; height: 8px;
+  border-radius: 50%;
+  background: var(--accent-green);
+  margin-left: auto;
+}
+.header .status-text {
+  font-size: 12px;
+  color: var(--text-secondary);
+}
+.header .new-session-btn {
+  background: var(--bg-tertiary);
+  border: 1px solid var(--border);
+  color: var(--text-secondary);
+  padding: 6px 12px;
+  border-radius: var(--radius);
+  cursor: pointer;
+  font-size: 12px;
+  transition: all 0.15s;
+}
+.header .new-session-btn:hover {
+  background: var(--border);
+  color: var(--text-primary);
+}
+
+/* ── Left Sidebar: Team Panel ── */
+.sidebar-left {
+  background: var(--bg-secondary);
+  border-right: 1px solid var(--border);
+  overflow-y: auto;
+  padding: 16px;
+}
+.sidebar-left h3 {
+  font-size: 11px;
+  text-transform: uppercase;
+  letter-spacing: 1px;
+  color: var(--text-muted);
+  margin-bottom: 12px;
+  padding: 0 4px;
+}
+
+/* Agent Cards */
+.agent-card {
+  background: var(--bg-card);
+  border: 1px solid var(--border);
+  border-radius: var(--radius);
+  padding: 12px;
+  margin-bottom: 8px;
+  cursor: pointer;
+  transition: all 0.15s;
+  position: relative;
+}
+.agent-card:hover {
+  border-color: var(--border-light);
+  background: var(--bg-tertiary);
+}
+.agent-card.active {
+  border-color: var(--accent-blue);
+  box-shadow: 0 0 0 1px var(--accent-blue);
+}
+.agent-card.subagent {
+  margin-left: 16px;
+  border-left: 2px solid var(--accent-purple);
+}
+.agent-card .agent-header {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  margin-bottom: 6px;
+}
+.agent-card .agent-avatar {
+  width: 32px; height: 32px;
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 14px;
+  flex-shrink: 0;
+}
+.agent-card .agent-avatar.pm { background: linear-gradient(135deg, #2d5aa0, #58a6ff); }
+.agent-card .agent-avatar.planner { background: linear-gradient(135deg, #8b5e3b, #d29922); }
+.agent-card .agent-avatar.explorer { background: linear-gradient(135deg, #553d8a, #bc8cff); }
+.agent-card .agent-name {
+  font-size: 13px;
+  font-weight: 600;
+}
+.agent-card .agent-role {
+  font-size: 11px;
+  color: var(--text-muted);
+}
+.agent-card .agent-desc {
+  font-size: 11px;
+  color: var(--text-secondary);
+  line-height: 1.4;
+}
+.agent-card .agent-mode {
+  display: inline-block;
+  font-size: 10px;
+  padding: 2px 6px;
+  border-radius: 10px;
+  margin-top: 6px;
+}
+.agent-card .agent-mode.primary {
+  background: rgba(88,166,255,0.15);
+  color: var(--accent-blue);
+}
+.agent-card .agent-mode.subagent-mode {
+  background: rgba(188,140,255,0.15);
+  color: var(--accent-purple);
+}
+
+/* Tools Section */
+.tools-section { margin-top: 20px; }
+.tool-chip {
+  display: inline-block;
+  background: var(--bg-tertiary);
+  border: 1px solid var(--border);
+  border-radius: 4px;
+  padding: 3px 8px;
+  font-size: 11px;
+  color: var(--text-secondary);
+  margin: 2px;
+  font-family: 'SF Mono', 'Fira Code', monospace;
+}
+
+/* ── Main Chat Area ── */
+.main {
+  display: flex;
+  flex-direction: column;
+  overflow: hidden;
+}
+
+/* Messages */
+.messages {
+  flex: 1;
+  overflow-y: auto;
+  padding: 20px 24px;
+  scroll-behavior: smooth;
+}
+.messages::-webkit-scrollbar { width: 6px; }
+.messages::-webkit-scrollbar-track { background: transparent; }
+.messages::-webkit-scrollbar-thumb { background: var(--border); border-radius: 3px; }
+
+/* Message Bubble */
+.message {
+  margin-bottom: 16px;
+  max-width: 85%;
+  animation: fadeIn 0.2s ease;
+}
+@keyframes fadeIn {
+  from { opacity: 0; transform: translateY(6px); }
+  to { opacity: 1; transform: translateY(0); }
+}
+.message.user {
+  margin-left: auto;
+}
+.message .msg-header {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  margin-bottom: 6px;
+}
+.message .msg-avatar {
+  width: 24px; height: 24px;
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 11px;
+  flex-shrink: 0;
+}
+.message.user .msg-avatar { background: var(--accent-green); color: #000; }
+.message.assistant .msg-avatar { background: var(--accent-blue); color: #000; }
+.message .msg-sender {
+  font-size: 12px;
+  font-weight: 600;
+  color: var(--text-secondary);
+}
+.message .msg-time {
+  font-size: 10px;
+  color: var(--text-muted);
+}
+.message .msg-body {
+  padding: 10px 14px;
+  border-radius: var(--radius);
+  font-size: 13px;
+  line-height: 1.6;
+  white-space: pre-wrap;
+  word-break: break-word;
+}
+.message.user .msg-body {
+  background: rgba(88,166,255,0.12);
+  border: 1px solid rgba(88,166,255,0.2);
+  color: var(--text-primary);
+}
+.message.assistant .msg-body {
+  background: var(--bg-card);
+  border: 1px solid var(--border);
+  color: var(--text-primary);
+}
+
+/* Streaming indicator */
+.streaming-cursor {
+  display: inline-block;
+  width: 2px;
+  height: 14px;
+  background: var(--accent-blue);
+  animation: blink 0.8s infinite;
+  vertical-align: text-bottom;
+  margin-left: 2px;
+}
+@keyframes blink {
+  0%, 50% { opacity: 1; }
+  51%, 100% { opacity: 0; }
+}
+
+/* Tool Call Card */
+.tool-call-card {
+  background: var(--bg-tertiary);
+  border: 1px solid var(--border);
+  border-left: 3px solid var(--accent-orange);
+  border-radius: var(--radius);
+  margin: 8px 0;
+  overflow: hidden;
+  animation: fadeIn 0.2s ease;
+}
+.tool-call-header {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 8px 12px;
+  cursor: pointer;
+  font-size: 12px;
+}
+.tool-call-header .tool-icon {
+  color: var(--accent-orange);
+  font-size: 14px;
+}
+.tool-call-header .tool-name {
+  font-weight: 600;
+  font-family: 'SF Mono', 'Fira Code', monospace;
+  color: var(--accent-orange);
+}
+.tool-call-header .tool-agent {
+  margin-left: auto;
+  font-size: 10px;
+  color: var(--text-muted);
+  background: var(--bg-card);
+  padding: 2px 6px;
+  border-radius: 4px;
+}
+.tool-call-body {
+  padding: 0 12px 10px;
+  font-size: 11px;
+  font-family: 'SF Mono', 'Fira Code', monospace;
+  color: var(--text-secondary);
+  display: none;
+}
+.tool-call-card.expanded .tool-call-body { display: block; }
+.tool-call-args { margin-bottom: 6px; }
+.tool-call-args .arg-key { color: var(--accent-cyan); }
+.tool-call-args .arg-val { color: var(--text-secondary); }
+.tool-call-result {
+  background: var(--bg-primary);
+  border-radius: 4px;
+  padding: 8px;
+  margin-top: 6px;
+  max-height: 150px;
+  overflow-y: auto;
+  white-space: pre-wrap;
+  word-break: break-all;
+  color: var(--text-muted);
+}
+
+/* SubAgent Card */
+.subagent-card {
+  background: var(--bg-card);
+  border: 1px solid rgba(188,140,255,0.3);
+  border-left: 3px solid var(--accent-purple);
+  border-radius: var(--radius);
+  margin: 10px 0;
+  padding: 10px 14px;
+  animation: fadeIn 0.2s ease;
+}
+.subagent-card .subagent-header {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  font-size: 12px;
+  margin-bottom: 6px;
+}
+.subagent-card .subagent-icon {
+  width: 20px; height: 20px;
+  border-radius: 50%;
+  background: linear-gradient(135deg, #553d8a, #bc8cff);
+  display: flex; align-items: center; justify-content: center;
+  font-size: 10px;
+}
+.subagent-card .subagent-name {
+  font-weight: 600;
+  color: var(--accent-purple);
+}
+.subagent-card .subagent-session {
+  margin-left: auto;
+  font-size: 10px;
+  color: var(--text-muted);
+  font-family: 'SF Mono', monospace;
+}
+.subagent-card .subagent-status {
+  font-size: 11px;
+  color: var(--text-secondary);
+}
+
+/* Step Indicator */
+.step-indicator {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 6px 14px;
+  margin: 6px 0;
+  font-size: 11px;
+  color: var(--text-muted);
+  border-left: 2px solid var(--border);
+}
+.step-indicator .step-dot {
+  width: 6px; height: 6px;
+  border-radius: 50%;
+  background: var(--accent-blue);
+  animation: pulse 1.5s infinite;
+}
+@keyframes pulse {
+  0%, 100% { opacity: 0.4; }
+  50% { opacity: 1; }
+}
+
+/* Ask User Card */
+.ask-user-card {
+  background: var(--bg-card);
+  border: 1px solid rgba(63,185,80,0.3);
+  border-left: 3px solid var(--accent-green);
+  border-radius: var(--radius);
+  margin: 10px 0;
+  padding: 14px;
+  animation: fadeIn 0.2s ease;
+}
+.ask-user-card .question-text {
+  font-size: 13px;
+  color: var(--text-primary);
+  margin-bottom: 10px;
+}
+.ask-user-card .answer-input-group {
+  display: flex;
+  gap: 8px;
+}
+.ask-user-card input {
+  flex: 1;
+  background: var(--bg-primary);
+  border: 1px solid var(--border);
+  border-radius: var(--radius);
+  padding: 8px 12px;
+  color: var(--text-primary);
+  font-size: 13px;
+  outline: none;
+}
+.ask-user-card input:focus { border-color: var(--accent-green); }
+.ask-user-card button {
+  background: var(--accent-green);
+  color: #000;
+  border: none;
+  border-radius: var(--radius);
+  padding: 8px 16px;
+  font-size: 12px;
+  font-weight: 600;
+  cursor: pointer;
+}
+
+/* Input Area */
+.input-area {
+  padding: 16px 24px;
+  border-top: 1px solid var(--border);
+  background: var(--bg-secondary);
+}
+.input-wrapper {
+  display: flex;
+  gap: 10px;
+  align-items: flex-end;
+}
+.input-wrapper textarea {
+  flex: 1;
+  background: var(--bg-primary);
+  border: 1px solid var(--border);
+  border-radius: var(--radius);
+  padding: 10px 14px;
+  color: var(--text-primary);
+  font-size: 13px;
+  font-family: inherit;
+  resize: none;
+  min-height: 40px;
+  max-height: 150px;
+  line-height: 1.5;
+  outline: none;
+  transition: border-color 0.15s;
+}
+.input-wrapper textarea:focus { border-color: var(--accent-blue); }
+.input-wrapper textarea::placeholder { color: var(--text-muted); }
+.send-btn {
+  background: var(--accent-blue);
+  color: #000;
+  border: none;
+  border-radius: var(--radius);
+  width: 40px; height: 40px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+  font-size: 16px;
+  flex-shrink: 0;
+  transition: all 0.15s;
+}
+.send-btn:hover { filter: brightness(1.1); }
+.send-btn:disabled {
+  background: var(--bg-tertiary);
+  color: var(--text-muted);
+  cursor: not-allowed;
+}
+.input-hint {
+  font-size: 11px;
+  color: var(--text-muted);
+  margin-top: 6px;
+}
+
+/* ── Right Sidebar: Activity Monitor ── */
+.sidebar-right {
+  background: var(--bg-secondary);
+  border-left: 1px solid var(--border);
+  overflow-y: auto;
+  padding: 16px;
+}
+.sidebar-right h3 {
+  font-size: 11px;
+  text-transform: uppercase;
+  letter-spacing: 1px;
+  color: var(--text-muted);
+  margin-bottom: 12px;
+  padding: 0 4px;
+}
+
+/* Activity Feed */
+.activity-feed {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+}
+.activity-item {
+  background: var(--bg-card);
+  border: 1px solid var(--border);
+  border-radius: 6px;
+  padding: 8px 10px;
+  font-size: 11px;
+  animation: fadeIn 0.2s ease;
+}
+.activity-item .activity-time {
+  font-size: 10px;
+  color: var(--text-muted);
+  margin-bottom: 3px;
+}
+.activity-item .activity-content {
+  color: var(--text-secondary);
+  line-height: 1.4;
+}
+.activity-item .activity-agent {
+  display: inline-block;
+  padding: 1px 5px;
+  border-radius: 3px;
+  font-size: 10px;
+  font-weight: 600;
+  margin-right: 4px;
+}
+.activity-item .activity-agent.build { background: rgba(88,166,255,0.15); color: var(--accent-blue); }
+.activity-item .activity-agent.plan { background: rgba(210,153,34,0.15); color: var(--accent-orange); }
+.activity-item .activity-agent.explore { background: rgba(188,140,255,0.15); color: var(--accent-purple); }
+
+/* Session Tree */
+.session-tree { margin-top: 16px; }
+.tree-node {
+  padding: 6px 8px;
+  margin-bottom: 4px;
+  border-radius: 4px;
+  font-size: 11px;
+  background: var(--bg-card);
+  border: 1px solid var(--border);
+}
+.tree-node.active { border-color: var(--accent-blue); }
+.tree-node .tree-label { color: var(--text-secondary); }
+.tree-node .tree-id {
+  font-family: 'SF Mono', monospace;
+  color: var(--text-muted);
+  font-size: 10px;
+}
+.tree-child {
+  margin-left: 16px;
+  border-left: 1px dashed var(--border);
+  padding-left: 8px;
+}
+
+/* Stats */
+.stats-grid {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 6px;
+  margin-bottom: 16px;
+}
+.stat-card {
+  background: var(--bg-card);
+  border: 1px solid var(--border);
+  border-radius: 6px;
+  padding: 8px;
+  text-align: center;
+}
+.stat-card .stat-value {
+  font-size: 18px;
+  font-weight: 700;
+  color: var(--text-primary);
+}
+.stat-card .stat-label {
+  font-size: 10px;
+  color: var(--text-muted);
+  margin-top: 2px;
+}
+
+/* Welcome screen */
+.welcome {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  height: 100%;
+  text-align: center;
+  padding: 40px;
+}
+.welcome .welcome-icon {
+  font-size: 48px;
+  margin-bottom: 16px;
+  opacity: 0.6;
+}
+.welcome h2 {
+  font-size: 20px;
+  font-weight: 600;
+  color: var(--text-primary);
+  margin-bottom: 8px;
+}
+.welcome p {
+  font-size: 13px;
+  color: var(--text-secondary);
+  max-width: 400px;
+  line-height: 1.6;
+}
+.welcome .shortcut-list {
+  margin-top: 20px;
+  text-align: left;
+}
+.welcome .shortcut {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  padding: 6px 0;
+  font-size: 12px;
+  color: var(--text-secondary);
+}
+.welcome .shortcut kbd {
+  background: var(--bg-tertiary);
+  border: 1px solid var(--border);
+  border-radius: 4px;
+  padding: 2px 8px;
+  font-family: 'SF Mono', monospace;
+  font-size: 11px;
+  color: var(--text-muted);
+  min-width: 100px;
+  text-align: center;
+}
+
+/* Thinking/Loading */
+.thinking {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 10px 14px;
+  color: var(--text-muted);
+  font-size: 12px;
+}
+.thinking-dots span {
+  display: inline-block;
+  width: 4px; height: 4px;
+  border-radius: 50%;
+  background: var(--accent-blue);
+  animation: dotPulse 1.4s infinite;
+  margin: 0 2px;
+}
+.thinking-dots span:nth-child(2) { animation-delay: 0.2s; }
+.thinking-dots span:nth-child(3) { animation-delay: 0.4s; }
+@keyframes dotPulse {
+  0%, 80%, 100% { opacity: 0.2; transform: scale(0.8); }
+  40% { opacity: 1; transform: scale(1.2); }
+}
+
+/* Responsive: collapse sidebars */
+@media (max-width: 1000px) {
+  .app { grid-template-columns: 1fr; }
+  .sidebar-left, .sidebar-right { display: none; }
+}
+</style>
+</head>
+<body>
+
+<div class="app">
+
+  <!-- ── Header ── -->
+  <div class="header">
+    <div class="logo">Mini-OpenCode <span>GUI</span></div>
+    <div class="model-badge" id="modelBadge">loading...</div>
+    <div class="status-dot" id="statusDot"></div>
+    <div class="status-text" id="statusText">Connecting...</div>
+    <button class="new-session-btn" onclick="newSession()">+ New Session</button>
+  </div>
+
+  <!-- ── Left Sidebar: Team ── -->
+  <div class="sidebar-left">
+    <h3>Outsourcing Team</h3>
+    <div id="agentList"></div>
+
+    <div class="tools-section">
+      <h3>Toolbox</h3>
+      <div id="toolList"></div>
+    </div>
+  </div>
+
+  <!-- ── Main Chat ── -->
+  <div class="main">
+    <div class="messages" id="messages">
+      <div class="welcome" id="welcome">
+        <div class="welcome-icon">&#9881;</div>
+        <h2>Welcome to Mini-OpenCode</h2>
+        <p>
+          Your AI outsourcing team is ready. The <strong>Project Manager</strong> (build agent)
+          is standing by. Describe your task and the team will get to work.
+        </p>
+        <div class="shortcut-list">
+          <div class="shortcut"><kbd>@explore</kbd> Delegate to codebase explorer</div>
+          <div class="shortcut"><kbd>/new</kbd> Start a new session</div>
+          <div class="shortcut"><kbd>Shift+Enter</kbd> New line in input</div>
+        </div>
+      </div>
+    </div>
+
+    <div class="input-area">
+      <div class="input-wrapper">
+        <textarea
+          id="chatInput"
+          rows="1"
+          placeholder="Describe your task to the team..."
+          onkeydown="handleKeyDown(event)"
+          oninput="autoResize(this)"
+        ></textarea>
+        <button class="send-btn" id="sendBtn" onclick="sendMessage()">&#9654;</button>
+      </div>
+      <div class="input-hint">
+        Press <strong>Enter</strong> to send, <strong>Shift+Enter</strong> for new line.
+        Use <strong>@explore</strong> to delegate to sub-agents.
+      </div>
+    </div>
+  </div>
+
+  <!-- ── Right Sidebar: Activity ── -->
+  <div class="sidebar-right">
+    <h3>Session Stats</h3>
+    <div class="stats-grid">
+      <div class="stat-card">
+        <div class="stat-value" id="statSteps">0</div>
+        <div class="stat-label">Steps</div>
+      </div>
+      <div class="stat-card">
+        <div class="stat-value" id="statTools">0</div>
+        <div class="stat-label">Tool Calls</div>
+      </div>
+      <div class="stat-card">
+        <div class="stat-value" id="statMsgs">0</div>
+        <div class="stat-label">Messages</div>
+      </div>
+      <div class="stat-card">
+        <div class="stat-value" id="statSubs">0</div>
+        <div class="stat-label">Sub-tasks</div>
+      </div>
+    </div>
+
+    <h3>Session Tree</h3>
+    <div id="sessionTree" class="session-tree"></div>
+
+    <h3 style="margin-top:16px;">Activity Feed</h3>
+    <div id="activityFeed" class="activity-feed"></div>
+  </div>
+
+</div>
+
+<script>
+// ── State ──
+let isStreaming = false;
+let currentStreamEl = null;
+let streamText = '';
+let stats = { steps: 0, tools: 0, msgs: 0, subs: 0 };
+let sessions = {};  // id -> {agent, parent_id, status}
+
+// ── Agent metadata for UI ──
+const agentMeta = {
+  build: { icon: 'PM', color: 'pm', title: 'Project Manager', role: 'Full-stack Development Lead' },
+  plan:  { icon: 'PL', color: 'planner', title: 'Planning Analyst', role: 'Architecture & Analysis' },
+  explore: { icon: 'EX', color: 'explorer', title: 'Code Explorer', role: 'Codebase Search Specialist' },
+};
+
+// ── Init ──
+document.addEventListener('DOMContentLoaded', () => {
+  loadStatus();
+  connectSSE();
+});
+
+async function loadStatus() {
+  try {
+    const resp = await fetch('/api/status');
+    const data = await resp.json();
+
+    // Model badge
+    document.getElementById('modelBadge').textContent = data.model;
+
+    // Agent list
+    renderAgents(data.agents);
+
+    // Tool list
+    renderTools(data.tools);
+
+    // Session
+    if (data.session) {
+      sessions[data.session.id] = { agent: 'build', parent_id: null, status: 'active' };
+      stats.msgs = data.session.message_count;
+      updateStats();
+      renderSessionTree();
+    }
+  } catch (e) {
+    console.error('Failed to load status:', e);
+  }
+}
+
+function renderAgents(agents) {
+  const container = document.getElementById('agentList');
+  container.innerHTML = '';
+  agents.forEach(a => {
+    const meta = agentMeta[a.name] || { icon: a.name[0].toUpperCase(), color: 'pm', title: a.name, role: '' };
+    const isSubagent = a.mode === 'subagent';
+    const card = document.createElement('div');
+    card.className = `agent-card ${a.is_current ? 'active' : ''} ${isSubagent ? 'subagent' : ''}`;
+    card.onclick = () => switchAgent(a.name);
+    card.innerHTML = `
+      <div class="agent-header">
+        <div class="agent-avatar ${meta.color}">${meta.icon}</div>
+        <div>
+          <div class="agent-name">${meta.title}</div>
+          <div class="agent-role">${meta.role}</div>
+        </div>
+      </div>
+      <div class="agent-desc">${a.description}</div>
+      <span class="agent-mode ${isSubagent ? 'subagent-mode' : 'primary'}">
+        ${isSubagent ? 'Employee' : 'Team Lead'} &middot; ${a.steps} steps
+      </span>
+    `;
+    container.appendChild(card);
+  });
+}
+
+function renderTools(tools) {
+  const container = document.getElementById('toolList');
+  container.innerHTML = '';
+  tools.forEach(t => {
+    const chip = document.createElement('span');
+    chip.className = 'tool-chip';
+    chip.textContent = t.name;
+    chip.title = t.description;
+    container.appendChild(chip);
+  });
+}
+
+async function switchAgent(name) {
+  try {
+    const resp = await fetch('/api/agent/switch', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ name }),
+    });
+    if (resp.ok) {
+      loadStatus();
+      addActivity('system', `Switched to agent: <strong>${name}</strong>`);
+    }
+  } catch (e) {
+    console.error('Failed to switch agent:', e);
+  }
+}
+
+async function newSession() {
+  try {
+    const resp = await fetch('/api/session/new', { method: 'POST' });
+    const data = await resp.json();
+    sessions = {};
+    sessions[data.session_id] = { agent: 'build', parent_id: null, status: 'active' };
+    stats = { steps: 0, tools: 0, msgs: 0, subs: 0 };
+    updateStats();
+    renderSessionTree();
+
+    // Clear messages
+    const messagesEl = document.getElementById('messages');
+    messagesEl.innerHTML = '';
+    document.getElementById('welcome').style.display = '';
+
+    addActivity('system', 'New session created: <code>' + data.session_id + '</code>');
+  } catch (e) {
+    console.error('Failed to create session:', e);
+  }
+}
+
+// ── SSE Connection ──
+function connectSSE() {
+  const source = new EventSource('/api/events');
+
+  source.addEventListener('connected', (e) => {
+    document.getElementById('statusDot').style.background = 'var(--accent-green)';
+    document.getElementById('statusText').textContent = 'Connected';
+  });
+
+  source.addEventListener('token', (e) => {
+    const data = JSON.parse(e.data);
+    appendStreamToken(data.text);
+  });
+
+  source.addEventListener('step', (e) => {
+    const data = JSON.parse(e.data);
+    stats.steps++;
+    stats.msgs = data.message_count;
+    updateStats();
+    addStepIndicator(data);
+  });
+
+  source.addEventListener('tool_call', (e) => {
+    const data = JSON.parse(e.data);
+    stats.tools++;
+    updateStats();
+    addToolCall(data);
+    addActivity(data.agent, `Called <code>${data.tool}</code>`);
+  });
+
+  source.addEventListener('tool_result', (e) => {
+    const data = JSON.parse(e.data);
+    updateToolResult(data);
+  });
+
+  source.addEventListener('agent_start', (e) => {
+    const data = JSON.parse(e.data);
+    if (data.parent_id) {
+      stats.subs++;
+      updateStats();
+      sessions[data.session_id] = {
+        agent: data.agent,
+        parent_id: data.parent_id,
+        status: 'running',
+      };
+      renderSessionTree();
+      addSubAgentCard(data);
+      addActivity(data.agent, `Sub-task started (session: ${data.session_id})`);
+    }
+  });
+
+  source.addEventListener('agent_done', (e) => {
+    const data = JSON.parse(e.data);
+    if (sessions[data.session_id]) {
+      sessions[data.session_id].status = 'done';
+      renderSessionTree();
+    }
+    addActivity(data.agent, `Completed`);
+  });
+
+  source.addEventListener('assistant_text', (e) => {
+    // Final text - stream is already done via tokens
+  });
+
+  source.addEventListener('user_message', (e) => {
+    const data = JSON.parse(e.data);
+    stats.msgs++;
+    updateStats();
+  });
+
+  source.addEventListener('ask_user', (e) => {
+    const data = JSON.parse(e.data);
+    addAskUserCard(data);
+  });
+
+  source.addEventListener('loop_done', (e) => {
+    finishStream();
+    setInputEnabled(true);
+    addActivity('system', 'Request completed');
+  });
+
+  source.onerror = () => {
+    document.getElementById('statusDot').style.background = 'var(--accent-red)';
+    document.getElementById('statusText').textContent = 'Disconnected';
+    setTimeout(connectSSE, 3000);
+  };
+}
+
+// ── Chat ──
+function handleKeyDown(e) {
+  if (e.key === 'Enter' && !e.shiftKey) {
+    e.preventDefault();
+    sendMessage();
+  }
+}
+
+function autoResize(el) {
+  el.style.height = 'auto';
+  el.style.height = Math.min(el.scrollHeight, 150) + 'px';
+}
+
+async function sendMessage() {
+  const input = document.getElementById('chatInput');
+  const text = input.value.trim();
+  if (!text || isStreaming) return;
+
+  // Hide welcome
+  const welcome = document.getElementById('welcome');
+  if (welcome) welcome.style.display = 'none';
+
+  // Add user message
+  addUserMessage(text);
+  input.value = '';
+  input.style.height = 'auto';
+  setInputEnabled(false);
+
+  // Start streaming placeholder
+  startStream();
+
+  try {
+    await fetch('/api/chat', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ message: text }),
+    });
+  } catch (e) {
+    finishStream();
+    setInputEnabled(true);
+    addSystemMessage('Error: Failed to send message');
+  }
+}
+
+function setInputEnabled(enabled) {
+  const input = document.getElementById('chatInput');
+  const btn = document.getElementById('sendBtn');
+  input.disabled = !enabled;
+  btn.disabled = !enabled;
+  isStreaming = !enabled;
+  if (enabled) input.focus();
+}
+
+// ── Message Rendering ──
+function addUserMessage(text) {
+  const el = document.createElement('div');
+  el.className = 'message user';
+  el.innerHTML = `
+    <div class="msg-header" style="justify-content:flex-end;">
+      <span class="msg-time">${timeStr()}</span>
+      <span class="msg-sender">You (Client)</span>
+      <div class="msg-avatar">U</div>
+    </div>
+    <div class="msg-body">${escapeHtml(text)}</div>
+  `;
+  appendToMessages(el);
+}
+
+function startStream() {
+  const el = document.createElement('div');
+  el.className = 'message assistant';
+  el.innerHTML = `
+    <div class="msg-header">
+      <div class="msg-avatar">AI</div>
+      <span class="msg-sender">Team</span>
+      <span class="msg-time">${timeStr()}</span>
+    </div>
+    <div class="msg-body"><span class="stream-text"></span><span class="streaming-cursor"></span></div>
+  `;
+  appendToMessages(el);
+  currentStreamEl = el.querySelector('.stream-text');
+  streamText = '';
+}
+
+function appendStreamToken(token) {
+  if (!currentStreamEl) startStream();
+  streamText += token;
+  currentStreamEl.textContent = streamText;
+  scrollToBottom();
+}
+
+function finishStream() {
+  if (currentStreamEl) {
+    const cursor = currentStreamEl.parentElement.querySelector('.streaming-cursor');
+    if (cursor) cursor.remove();
+
+    // Render markdown-like formatting
+    const rendered = renderMarkdown(streamText);
+    currentStreamEl.innerHTML = rendered;
+  }
+  currentStreamEl = null;
+  streamText = '';
+}
+
+function addStepIndicator(data) {
+  const el = document.createElement('div');
+  el.className = 'step-indicator';
+  el.innerHTML = `
+    <span class="step-dot"></span>
+    Step ${data.step}/${data.max_steps} &middot; Agent: ${data.agent} &middot;
+    ${data.message_count} msgs, ${data.tool_count} tools
+  `;
+  appendToMessages(el);
+}
+
+function addToolCall(data) {
+  const id = 'tc-' + Date.now() + Math.random().toString(36).substr(2, 4);
+  const el = document.createElement('div');
+  el.className = 'tool-call-card';
+  el.id = id;
+
+  let argsHtml = '';
+  for (const [k, v] of Object.entries(data.args || {})) {
+    argsHtml += `<div class="tool-call-args"><span class="arg-key">${escapeHtml(k)}</span>: <span class="arg-val">${escapeHtml(v.substring(0, 150))}</span></div>`;
+  }
+
+  el.innerHTML = `
+    <div class="tool-call-header" onclick="this.parentElement.classList.toggle('expanded')">
+      <span class="tool-icon">&#9881;</span>
+      <span class="tool-name">${escapeHtml(data.tool)}</span>
+      <span class="tool-agent">${data.agent}</span>
+    </div>
+    <div class="tool-call-body">
+      ${argsHtml}
+      <div class="tool-call-result" id="${id}-result">Running...</div>
+    </div>
+  `;
+  appendToMessages(el);
+
+  // Store reference for result update
+  el.dataset.toolName = data.tool;
+  el.dataset.agent = data.agent;
+}
+
+function updateToolResult(data) {
+  // Find the last tool call card matching this tool name
+  const cards = document.querySelectorAll('.tool-call-card');
+  for (let i = cards.length - 1; i >= 0; i--) {
+    const card = cards[i];
+    if (card.dataset.toolName === data.tool) {
+      const resultEl = card.querySelector('.tool-call-result');
+      if (resultEl && resultEl.textContent === 'Running...') {
+        resultEl.textContent = data.result_preview || '(empty)';
+        break;
+      }
+    }
+  }
+}
+
+function addSubAgentCard(data) {
+  const meta = agentMeta[data.agent] || { icon: '?', title: data.agent };
+  const el = document.createElement('div');
+  el.className = 'subagent-card';
+  el.id = 'sub-' + data.session_id;
+  el.innerHTML = `
+    <div class="subagent-header">
+      <div class="subagent-icon">${meta.icon}</div>
+      <span class="subagent-name">${meta.title}</span>
+      <span class="subagent-session">${data.session_id}</span>
+    </div>
+    <div class="subagent-status">Delegated: ${data.description || 'Working...'}</div>
+  `;
+  appendToMessages(el);
+}
+
+function addAskUserCard(data) {
+  const el = document.createElement('div');
+  el.className = 'ask-user-card';
+  el.innerHTML = `
+    <div class="question-text">${escapeHtml(data.question)}</div>
+    <div class="answer-input-group">
+      <input type="text" id="answer-${data.answer_id}" placeholder="Type your answer..."
+             onkeydown="if(event.key==='Enter')submitAnswer('${data.answer_id}')">
+      <button onclick="submitAnswer('${data.answer_id}')">Reply</button>
+    </div>
+  `;
+  appendToMessages(el);
+  setTimeout(() => document.getElementById('answer-' + data.answer_id)?.focus(), 100);
+}
+
+async function submitAnswer(answerId) {
+  const input = document.getElementById('answer-' + answerId);
+  if (!input) return;
+  const answer = input.value.trim() || '(no answer)';
+
+  try {
+    await fetch('/api/answer', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ answer_id: answerId, answer }),
+    });
+
+    // Update UI
+    const card = input.closest('.ask-user-card');
+    card.innerHTML = `
+      <div class="question-text" style="color:var(--text-muted);">Answered: ${escapeHtml(answer)}</div>
+    `;
+  } catch (e) {
+    console.error('Failed to submit answer:', e);
+  }
+}
+
+function addSystemMessage(text) {
+  const el = document.createElement('div');
+  el.className = 'step-indicator';
+  el.innerHTML = `<span style="color:var(--accent-red);">${text}</span>`;
+  appendToMessages(el);
+}
+
+// ── Right Sidebar ──
+function updateStats() {
+  document.getElementById('statSteps').textContent = stats.steps;
+  document.getElementById('statTools').textContent = stats.tools;
+  document.getElementById('statMsgs').textContent = stats.msgs;
+  document.getElementById('statSubs').textContent = stats.subs;
+}
+
+function addActivity(agent, content) {
+  const feed = document.getElementById('activityFeed');
+  const el = document.createElement('div');
+  el.className = 'activity-item';
+
+  const agentClass = ['build', 'plan', 'explore'].includes(agent) ? agent : '';
+  const agentLabel = agent === 'system' ? '' : `<span class="activity-agent ${agentClass}">${agent}</span>`;
+
+  el.innerHTML = `
+    <div class="activity-time">${timeStr()}</div>
+    <div class="activity-content">${agentLabel}${content}</div>
+  `;
+
+  // Prepend (newest first)
+  feed.insertBefore(el, feed.firstChild);
+
+  // Keep max 50 items
+  while (feed.children.length > 50) {
+    feed.removeChild(feed.lastChild);
+  }
+}
+
+function renderSessionTree() {
+  const container = document.getElementById('sessionTree');
+  container.innerHTML = '';
+
+  // Find root sessions
+  const roots = Object.entries(sessions).filter(([id, s]) => !s.parent_id);
+  const children = Object.entries(sessions).filter(([id, s]) => s.parent_id);
+
+  roots.forEach(([id, s]) => {
+    const node = document.createElement('div');
+    node.className = 'tree-node active';
+    const meta = agentMeta[s.agent] || { title: s.agent };
+    node.innerHTML = `
+      <span class="tree-label">${meta.title}</span>
+      <span class="tree-id">${id}</span>
+    `;
+    container.appendChild(node);
+
+    // Children
+    const myChildren = children.filter(([cid, cs]) => cs.parent_id === id);
+    if (myChildren.length) {
+      const childContainer = document.createElement('div');
+      childContainer.className = 'tree-child';
+      myChildren.forEach(([cid, cs]) => {
+        const cmeta = agentMeta[cs.agent] || { title: cs.agent };
+        const cnode = document.createElement('div');
+        cnode.className = 'tree-node';
+        const statusColor = cs.status === 'done' ? 'var(--accent-green)' : 'var(--accent-orange)';
+        cnode.innerHTML = `
+          <span class="tree-label">${cmeta.title}</span>
+          <span class="tree-id">${cid}</span>
+          <span style="float:right;width:6px;height:6px;border-radius:50%;background:${statusColor};display:inline-block;margin-top:3px;"></span>
+        `;
+        childContainer.appendChild(cnode);
+      });
+      container.appendChild(childContainer);
+    }
+  });
+}
+
+// ── Helpers ──
+function appendToMessages(el) {
+  const container = document.getElementById('messages');
+  // Remove welcome if present
+  const welcome = document.getElementById('welcome');
+  if (welcome) welcome.style.display = 'none';
+  container.appendChild(el);
+  scrollToBottom();
+}
+
+function scrollToBottom() {
+  const container = document.getElementById('messages');
+  container.scrollTop = container.scrollHeight;
+}
+
+function timeStr() {
+  return new Date().toLocaleTimeString('en-US', { hour12: false, hour: '2-digit', minute: '2-digit', second: '2-digit' });
+}
+
+function escapeHtml(str) {
+  if (!str) return '';
+  return str.replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;').replace(/"/g, '&quot;');
+}
+
+function renderMarkdown(text) {
+  if (!text) return '';
+  let html = escapeHtml(text);
+  // Code blocks
+  html = html.replace(/```(\w*)\n([\s\S]*?)```/g, '<pre style="background:var(--bg-primary);padding:10px;border-radius:6px;overflow-x:auto;margin:8px 0;"><code>$2</code></pre>');
+  // Inline code
+  html = html.replace(/`([^`]+)`/g, '<code style="background:var(--bg-tertiary);padding:2px 5px;border-radius:3px;font-size:12px;">$1</code>');
+  // Bold
+  html = html.replace(/\*\*([^*]+)\*\*/g, '<strong>$1</strong>');
+  // Headers
+  html = html.replace(/^### (.+)$/gm, '<strong style="font-size:14px;display:block;margin:8px 0 4px;">$1</strong>');
+  html = html.replace(/^## (.+)$/gm, '<strong style="font-size:15px;display:block;margin:10px 0 4px;">$1</strong>');
+  html = html.replace(/^# (.+)$/gm, '<strong style="font-size:16px;display:block;margin:12px 0 4px;">$1</strong>');
+  // Lists
+  html = html.replace(/^- (.+)$/gm, '&bull; $1');
+  html = html.replace(/^\d+\. (.+)$/gm, '&bull; $1');
+  return html;
+}
+</script>
+
+</body>
+</html>
