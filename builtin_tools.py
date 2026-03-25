@@ -1,11 +1,12 @@
 """
 内置工具 —— 对应 OpenCode 的 src/tool/ 下的各个工具文件
 
-实现: read, write, edit, bash, grep, glob
+实现: read, write, edit, bash, grep, glob, ask_user
 每个工具用 tool.define() 注册
 """
 
 from __future__ import annotations
+import asyncio
 import os
 import subprocess
 import glob as glob_mod
@@ -278,4 +279,60 @@ tool.define(
         "required": ["pattern"],
     },
     execute=_glob,
+)
+
+
+# ── ask_user ──────────────────────────────────────────
+
+
+async def _ask_user(params: dict, ctx: tool.ToolContext) -> str:
+    """
+    向用户提问并等待回答。
+    对应 OpenCode 中 LLM 向用户确认/澄清需求的交互能力。
+
+    这个工具比较特殊：它的 execute 需要阻塞等待用户输入。
+    在 async 环境中，我们用 asyncio 在线程池中运行 input()。
+    """
+    question = params["question"]
+
+    # 在终端显示问题，用可视化边框让用户注意到
+    print()
+    print("  ┌─ 🤖 Agent 有问题想问你 ─────────────────────")
+    print(f"  │  {question}")
+    print("  └─────────────────────────────────────────────")
+
+    # input() 是阻塞调用，用 run_in_executor 避免阻塞事件循环
+    loop = asyncio.get_event_loop()
+    try:
+        answer = await loop.run_in_executor(
+            None,  # 使用默认线程池
+            lambda: input("  ▶ 你的回答: "),
+        )
+    except (EOFError, KeyboardInterrupt):
+        answer = "(用户未回答)"
+
+    print()
+    return answer.strip() if answer else "(用户未回答)"
+
+
+tool.define(
+    name="ask_user",
+    description=(
+        "Ask the user a question and wait for their response. "
+        "Use this when you need clarification, confirmation, or additional "
+        "information from the user to proceed with a task. "
+        "Examples: confirming destructive operations, choosing between options, "
+        "asking for missing requirements."
+    ),
+    parameters={
+        "type": "object",
+        "properties": {
+            "question": {
+                "type": "string",
+                "description": "The question to ask the user",
+            },
+        },
+        "required": ["question"],
+    },
+    execute=_ask_user,
 )

@@ -7,7 +7,8 @@ OpenCode 核心架构的 Python 简化复刻。约 600 行代码实现完整的 
 | 文件               | 对应 OpenCode           | 功能                                                    |
 | ------------------ | ----------------------- | ------------------------------------------------------- |
 | `tool.py`          | `src/tool/tool.ts`      | 工具定义、注册、权限过滤                                |
-| `builtin_tools.py` | `src/tool/bash.ts` 等   | 6 个内置工具: read/write/edit/bash/grep/glob            |
+| `builtin_tools.py` | `src/tool/bash.ts` 等   | 7 个内置工具: read/write/edit/bash/grep/glob/ask_user   |
+| `search_web_tool.py` | 自定义工具示例        | 网页搜索工具（自定义工具开发教程配套代码）              |
 | `agent.py`         | `src/agent/agent.ts`    | Agent 定义、3 个内置 agent、权限系统                    |
 | `session.py`       | `src/session/prompt.ts` | **核心 Agent Loop**: 消息管理 + LLM 调用 + 工具执行循环 |
 | `llm.py`           | `src/session/llm.ts`    | OpenAI 兼容 API 流式调用（requests + SSE 手动解析）     |
