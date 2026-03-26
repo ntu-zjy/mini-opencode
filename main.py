@@ -29,6 +29,7 @@ import tool  # 工具定义系统
 import builtin_tools  # 注册内置工具 (read/write/edit/bash/grep/glob/ask_user)
 import search_web_tool  # 自定义工具示例：网页搜索
 import agent  # Agent 定义
+import xiaohongshu_plugin  # 小红书内容创作插件（注册 agents + tools + skills）
 import skill  # Skill 系统
 import task_tool  # SubAgent 委派工具
 import session  # Session 与 Agent Loop
